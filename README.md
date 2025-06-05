@@ -104,6 +104,15 @@ This comprehensive methodology ensures that the T-shirt image retrieval and capt
 
 Effective preprocessing and embedding generation are foundational to the success of any deep learning-based information retrieval system. This section elaborates on the specific strategies employed for both image and text modalities.
 
+Based on the images provided, here's a section for your report discussing them within the context of your T-shirt image retrieval and captioning project. I'll frame it as a "Case Study" or "Demonstration" of the system's capabilities.
+
+---
+
+
+
+
+
+
 ### 4.1. Image Preprocessing
 
 For both CLIP (Image Encoder) and BLIP (Image Captioning), consistent image preprocessing is crucial to align the input data with the models' expectations during their pre-training phase.
