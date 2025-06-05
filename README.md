@@ -1,4 +1,4 @@
-# T-shirt Image Retrieval and Captioning System
+# Comprehensive Report: T-shirt Image Retrieval and Captioning System
 
 ## 1. Introduction to Multimodal Information Retrieval
 
@@ -10,7 +10,7 @@ The system is compartmentalized into three interconnected modules:
 
 * **Image Retrieval (Text-to-Image):** This module allows users to provide a textual query (e.g., "blue graphic T-shirt") and receive the most semantically similar T-shirt images from a dataset of 1,993 images. This task explores contrastive learning principles and the direct application of pre-trained vision-language models for cross-modal similarity.
 * **Image Captioning:** This module extends the system's capabilities by generating detailed textual descriptions for each T-shirt image. These machine-generated captions serve as valuable metadata, enriching the images with linguistic context.
-* **Text Retrieval (Text-to-Text via Captions):** Building upon the generated captions, this module enables a more refined text-based search. Given a textual query, the system retrieves images by identifying captions that are most relevant to the query. This involves leveraging text embedding models and similarity computation techniques.
+* **Text Retrieval:** Building upon the generated captions, this module enables a more refined text-based search. Given a textual query, the system retrieves images by identifying captions that are most relevant to the query. This involves leveraging text embedding models and similarity computation techniques.
 
 This report will systematically detail the methodology, implementation, and results for each of these sub-projects. It will include comprehensive documentation, justification for the chosen pre-trained models, and conceptual standalone inference pipelines to demonstrate the system's capabilities. The overarching goal is to provide a practical understanding of multimodal IR and the immense potential of pre-trained models in bridging the gap between language and vision.
 
@@ -104,15 +104,6 @@ This comprehensive methodology ensures that the T-shirt image retrieval and capt
 
 Effective preprocessing and embedding generation are foundational to the success of any deep learning-based information retrieval system. This section elaborates on the specific strategies employed for both image and text modalities.
 
-Based on the images provided, here's a section for your report discussing them within the context of your T-shirt image retrieval and captioning project. I'll frame it as a "Case Study" or "Demonstration" of the system's capabilities.
-
----
-
-
-
-
-
-
 ### 4.1. Image Preprocessing
 
 For both CLIP (Image Encoder) and BLIP (Image Captioning), consistent image preprocessing is crucial to align the input data with the models' expectations during their pre-training phase.
@@ -195,8 +186,7 @@ This is a crucial pre-computation step to prepare the image database for fast qu
 * **`preprocess_image_for_clip(img_path)` Function:**
     * Takes the path to an image file.
     * Loads the image using `PIL.Image.open()` and converts it to RGB.
-    * Applies the `torchvision.transforms.Compose` pipeline with `Resize((224, 224))`, `ToTensor()`, and `Normalize(mean=[0.481, 0.457, 0.408], std=[0.268, 0.261, 0.275])`. This ensures that every image is transformed into a PyTorch tensor ready for CLIP's image encoder, adhering strictly to the model's pre-training normalization.
-    * `unsqueeze(0)` is used to add a batch dimension, as models expect inputs in a batch format.
+    * Adds a batch dimension using `unsqueeze(0)`.
 * **Embedding Loop:**
     * A loop iterates through all image files in the `dataset_path`.
     * For each image, `preprocess_image_for_clip` is called.
@@ -217,6 +207,13 @@ This function handles live queries after the index is prepared.
     * `index.search(text_embedding, top_k)` performs the rapid search in the FAISS index. It returns `distances` (L2 distances) and `indices` (array of indices of the `top_k` results).
     * Results are visualized using `matplotlib.pyplot`, opening the corresponding images from `img_paths_list` and displaying them.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{output.png}
+    \caption{This figure displays a set of retrieved T-shirt images. The query that led to these results was likely "palm angels setai". Each image in the row represents a potential match, showcasing various T-shirt designs, colors, and graphics. The diversity of the retrieved images suggests the system's ability to interpret a complex textual query and find a range of semantically related visual results within the T-shirt dataset.}
+    \label{fig:retrieved_images_palm_angels}
+\end{figure}
+
 ### 5.3. Image Captioning Module Implementation
 
 This module focuses on generating textual descriptions for individual images.
@@ -228,6 +225,13 @@ This module focuses on generating textual descriptions for individual images.
     * `blip_processor.decode(output[0], skip_special_tokens=True)` converts the generated token IDs back into a human-readable string, removing any padding or special tokens.
 * **Batch Caption Generation (Helper):**
     * `generate_captions_for_all_images(image_paths_list)` is a utility to iterate through all images and generate a caption for each, typically performed as a one-time pre-computation. The results would be stored in a dictionary mapping image paths to captions.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{output_2.jpg}
+    \caption{This figure presents a single T-shirt image. The associated caption generated by the image captioning system is "ysl striped t shirt, Saint Laurent Slim-Fit Striped Stretch Linen and Cotton-Blend Jersey T-Shirt". The image itself shows a striped short-sleeved T-shirt with a small logo, demonstrating the captioning model's ability to identify patterns, general item type, and potentially brand or material details, which are crucial for effective text-based image retrieval.}
+    \label{fig:captioned_image_ysl}
+\end{figure}
 
 ### 5.4. Text Retrieval Module Implementation
 
@@ -241,8 +245,6 @@ This module leverages the generated captions for text-to-text retrieval.
     * **Result Extraction:** The top `top_k` image paths and their corresponding captions are retrieved using these ranked indices.
 * **`display_retrieved_images_with_captions(query_text_input, image_paths_list, captions_list, top_k=5)` Function:**
     * Orchestrates the text retrieval and then displays the retrieved images along with their captions for visual inspection.
-
-This detailed breakdown demonstrates the functional implementation of each system component, highlighting the specific roles of chosen pre-trained models and auxiliary libraries in achieving the desired information retrieval and captioning capabilities.
 
 ## 6. Pre-trained Model Justification: A Detailed Review
 
@@ -281,7 +283,7 @@ The selection of pre-trained models is a cornerstone of this project, aligning w
 **Model Description:** FAISS (Facebook AI Similarity Search) is an open-source library developed by Meta (formerly Facebook) for efficient similarity search and clustering of dense vectors. It provides highly optimized implementations of various algorithms for finding the nearest neighbors of query vectors in a large database of vectors. It supports both exact nearest neighbor search (e.g., `IndexFlatL2`) and approximate nearest neighbor (ANN) search (e.g., `IndexIVFFlat`, `IndexHNSW`) for scalability to billions of vectors. The `faiss-cpu` variant specifically targets CPU execution, while `faiss-gpu` leverages NVIDIA GPUs for even faster computations.
 
 **Justification:**
-* **Scalability for Embeddings:** With 1,993 T-shirt images, each represented by a 512-dimensional vector, a brute-force comparison for every query (calculating similarity with all 1,993 images) is feasible but not optimal for real-time performance, especially if the dataset were to scale to hundreds of thousands or millions of images. FAISS is purpose-built to handle such high-dimensional vector similarity searches efficiently.
+* **Scalability for Embeddings:** With 1,993 T-shirt images, each represented by a 512-dimensional vector, a brute-force comparison for every query (calculating similarity with all 1,993 images) is feasible but not optimal for real-time applications or larger datasets. FAISS is purpose-built to handle such high-dimensional vector similarity searches efficiently.
 * **Performance:** `IndexFlatL2` offers a high-performance, exact search. It is optimized through C++ implementations and SIMD instructions, making it much faster than a pure Python/NumPy loop for similarity calculations.
 * **Integration with NumPy:** FAISS seamlessly integrates with NumPy arrays, which is the format in which embeddings are typically handled after being extracted from PyTorch tensors.
 * **Industry Standard:** FAISS is a widely adopted and robust library in the industry for large-scale similarity search, making it a reliable and scalable choice for building retrieval systems.
